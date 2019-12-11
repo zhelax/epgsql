@@ -3,6 +3,8 @@
 
 -module(epgsql).
 
+-compile([{parse_transform, lager_transform}, tuple_calls]).
+
 -export([connect/1, connect/2, connect/3, connect/4, connect/5,
          close/1,
          get_parameter/2,
@@ -393,6 +395,11 @@ with_transaction(C, F, Opts0) ->
         R
     catch
         ?WITH_STACKTRACE(Type, Reason, Stack)
+            lager:error(
+                "=== Transaction ===~nType"
+                "~p~nReason ~p~nStack ~p~n",
+                [Type, Reason,Stack]
+            ),
             squery(C, "ROLLBACK"),
             case maps:get(reraise, Opts, true) of
                 true ->
